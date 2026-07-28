@@ -8,9 +8,9 @@ const REASONS: Record<string, string> = {
 export default async function ErrorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reason?: string; detail?: string }>
+  searchParams: Promise<{ reason?: string }>
 }) {
-  const { reason, detail } = await searchParams
+  const { reason } = await searchParams
   const message = (reason && REASONS[reason]) ?? 'Ocurrió un error inesperado.'
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
@@ -18,11 +18,6 @@ export default async function ErrorPage({
         <p className="text-2xl">⚠️</p>
         <h1 className="font-semibold text-gray-900">Algo salió mal</h1>
         <p className="text-sm text-gray-500">{message}</p>
-        {detail && (
-          <p className="text-xs text-red-500 font-mono break-all text-left bg-red-50 p-3 rounded">
-            {detail}
-          </p>
-        )}
       </div>
     </div>
   )
