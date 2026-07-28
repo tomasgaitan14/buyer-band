@@ -1,7 +1,7 @@
 const APP_ID = process.env.TIENDANUBE_APP_ID!
 const CLIENT_SECRET = process.env.TIENDANUBE_CLIENT_SECRET!
 const TOKEN_URL = 'https://www.tiendanube.com/apps/authorize/token'
-const API_BASE = 'https://api.tiendanube.com/2025-03'
+const API_BASE = 'https://api.tiendanube.com/v1'
 
 // User-Agent requerido por la API de TN en cada request
 const USER_AGENT = `BuyerBand/1.0 (${APP_ID}) tomasagustingaitan@gmail.com`
