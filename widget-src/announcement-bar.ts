@@ -36,11 +36,43 @@ interface WidgetResponse {
 
   if (!storeId) return
 
+  const CACHE_KEY = `bb-cfg-${storeId}`
+  const CACHE_TTL = 5 * 60 * 1000 // 5 minutos
+
+  function readCache(): WidgetResponse | null {
+    try {
+      const raw = localStorage.getItem(CACHE_KEY)
+      if (!raw) return null
+      const { data, ts } = JSON.parse(raw)
+      if (Date.now() - ts > CACHE_TTL) return null
+      return data as WidgetResponse
+    } catch {
+      return null
+    }
+  }
+
+  function writeCache(data: WidgetResponse) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }))
+    } catch {}
+  }
+
+  // mostrar desde caché inmediatamente, sin esperar al fetch
+  const cached = readCache()
+  if (cached?.enabled && cached.config) {
+    render(cached.config)
+  }
+
+  // refrescar en background — si hay cambios se aplican en la próxima carga
   fetch(`${__API_BASE__}/api/widget-config?store_id=${storeId}`)
     .then((r) => r.json() as Promise<WidgetResponse>)
     .then((data) => {
-      if (!data?.enabled || !data.config) return
-      render(data.config)
+      writeCache(data)
+      // si no había caché, renderizar ahora
+      if (!cached) {
+        if (!data?.enabled || !data.config) return
+        render(data.config)
+      }
     })
     .catch(() => {}) // silenciar errores — nunca interrumpir la tienda del comerciante
 
