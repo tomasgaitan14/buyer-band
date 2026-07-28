@@ -117,7 +117,7 @@ export async function activateRecurringCharge(
 }
 
 export async function getStoreInfo(storeId: number, accessToken: string): Promise<StoreInfo> {
-  const response = await fetch(`${API_BASE}/${storeId}`, {
+  const response = await fetch(`${API_BASE}/${storeId}/store`, {
     headers: {
       Authentication: `bearer ${accessToken}`,
       'User-Agent': USER_AGENT,
