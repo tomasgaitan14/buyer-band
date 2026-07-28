@@ -22,13 +22,20 @@ export async function GET(request: NextRequest) {
     const { access_token, user_id } = await exchangeCodeForToken(code)
     const storeId = parseInt(user_id, 10)
 
-    const storeInfo = await getStoreInfo(storeId, access_token)
+    // store_url es opcional — si la API falla no bloqueamos la instalación
+    let storeUrl: string | null = null
+    try {
+      const storeInfo = await getStoreInfo(storeId, access_token)
+      storeUrl = storeInfo.main_domain || storeInfo.original_domain || null
+    } catch {
+      console.warn('[auth/callback] getStoreInfo failed, proceeding without store_url')
+    }
 
     const supabase = createServerClient()
     const { error } = await supabase.from('stores').upsert({
       id: storeId,
       access_token,
-      store_url: storeInfo.main_domain || storeInfo.original_domain,
+      store_url: storeUrl,
       plan: 'trial',
       trial_started_at: new Date().toISOString(),
     })
