@@ -40,7 +40,10 @@ export async function GET(request: NextRequest) {
     response.cookies.set(cookieOpts)
     return response
   } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err)
     console.error('[auth/callback]', err)
-    return NextResponse.redirect(`${APP_URL}/error?reason=auth_failed`)
+    return NextResponse.redirect(
+      `${APP_URL}/error?reason=auth_failed&detail=${encodeURIComponent(detail)}`
+    )
   }
 }
