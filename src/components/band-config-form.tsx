@@ -94,6 +94,24 @@ export function BandConfigForm({
   return (
     <div className="space-y-6">
       <style>{TRANSITION_CSS}</style>
+
+      {/* Advertencia de vencimiento próximo */}
+      {plan === 'trial' && trialDaysLeft !== null && trialDaysLeft <= 2 && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4">
+          <p className="text-sm text-amber-800">
+            {trialDaysLeft === 0
+              ? 'Tu trial vence hoy. Activá tu suscripción para no perder el acceso.'
+              : `Tu trial vence en ${trialDaysLeft} día${trialDaysLeft === 1 ? '' : 's'}. Activalo antes de que se corte.`}
+          </p>
+          <a
+            href="/billing"
+            className="shrink-0 bg-amber-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors"
+          >
+            Activar ahora
+          </a>
+        </div>
+      )}
+
       {/* Plan badge */}
       <div className="flex items-center justify-between">
         <div>
