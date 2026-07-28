@@ -1,6 +1,5 @@
-// Derivar el base URL del propio script — funciona en dev y producción sin variables de entorno
-const _scriptEl = Array.from(document.scripts).find((s) => s.src.includes('/widget.js'))
-const __API_BASE__ = _scriptEl ? new URL(_scriptEl.src).origin : ''
+// TN sube el widget a su CDN — la URL de la API va hardcodeada
+const __API_BASE__ = 'https://band-lilac.vercel.app'
 
 interface Message {
   text: string
@@ -125,9 +124,18 @@ interface WidgetResponse {
 
     let index = 0
 
+    function isValidLink(url: string): boolean {
+      try {
+        const u = new URL(url)
+        return u.protocol === 'http:' || u.protocol === 'https:'
+      } catch {
+        return false
+      }
+    }
+
     function showMessage(i: number) {
       const msg = messages[i]
-      if (msg.link) {
+      if (msg.link && isValidLink(msg.link)) {
         messageEl.innerHTML = `<a href="${msg.link}" style="color:${textColor};text-decoration:underline;">${msg.text}</a>`
       } else {
         messageEl.textContent = msg.text

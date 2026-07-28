@@ -57,7 +57,23 @@ export function BandConfigForm({
     setConfig((prev) => ({ ...prev, messages: prev.messages.filter((_, i) => i !== index) }))
   }
 
+  function isValidUrl(value: string): boolean {
+    if (!value) return true
+    try {
+      const url = new URL(value)
+      return url.protocol === 'http:' || url.protocol === 'https:'
+    } catch {
+      return false
+    }
+  }
+
   async function handleSave() {
+    const invalidLink = config.messages.find((m) => m.link && !isValidUrl(m.link))
+    if (invalidLink) {
+      setFeedback('error')
+      setTimeout(() => setFeedback(null), 3000)
+      return
+    }
     setSaving(true)
     setFeedback(null)
     try {
@@ -163,11 +179,18 @@ export function BandConfigForm({
                 />
                 <input
                   type="url"
-                  placeholder="Link (opcional)"
+                  placeholder="Link (opcional, ej: https://mitienda.com/sale)"
                   value={msg.link}
                   onChange={(e) => updateMessage(i, 'link', e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-black"
+                  className={`w-full border rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
+                    msg.link && !isValidUrl(msg.link)
+                      ? 'border-red-400 focus:ring-red-400'
+                      : 'border-gray-200 focus:ring-black'
+                  }`}
                 />
+                {msg.link && !isValidUrl(msg.link) && (
+                  <p className="text-xs text-red-500">Debe ser una URL válida (https://...)</p>
+                )}
               </div>
               {config.messages.length > 1 && (
                 <button
@@ -310,7 +333,11 @@ export function BandConfigForm({
           <span className="text-sm text-green-600 font-medium">Cambios guardados</span>
         )}
         {feedback === 'error' && (
-          <span className="text-sm text-red-600 font-medium">Error al guardar</span>
+          <span className="text-sm text-red-600 font-medium">
+            {config.messages.some((m) => m.link && !isValidUrl(m.link))
+              ? 'Corregí los links inválidos antes de guardar'
+              : 'Error al guardar'}
+          </span>
         )}
       </div>
     </div>
