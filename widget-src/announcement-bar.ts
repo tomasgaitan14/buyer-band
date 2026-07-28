@@ -1,0 +1,153 @@
+// Derivar el base URL del propio script — funciona en dev y producción sin variables de entorno
+const _scriptEl = Array.from(document.scripts).find((s) => s.src.includes('/widget.js'))
+const __API_BASE__ = _scriptEl ? new URL(_scriptEl.src).origin : ''
+
+interface Message {
+  text: string
+  link?: string
+}
+
+type Transition = 'none' | 'fade' | 'slide-up' | 'slide-down'
+
+interface BarConfig {
+  messages: Message[]
+  backgroundColor: string
+  textColor: string
+  speed: number
+  closeable: boolean
+  transition: Transition
+}
+
+const TRANSITION_ANIMATION: Record<Transition, string> = {
+  none: '',
+  fade: 'bbFade 0.4s ease',
+  'slide-up': 'bbSlideUp 0.4s ease',
+  'slide-down': 'bbSlideDown 0.4s ease',
+}
+
+interface WidgetResponse {
+  enabled: boolean
+  config?: BarConfig
+}
+
+;(function () {
+  // LS es el objeto global que expone Tiendanube en el storefront
+  const LS = (window as any).LS
+  const storeId = LS?.store?.id
+
+  if (!storeId) return
+
+  fetch(`${__API_BASE__}/api/widget-config?store_id=${storeId}`)
+    .then((r) => r.json() as Promise<WidgetResponse>)
+    .then((data) => {
+      if (!data?.enabled || !data.config) return
+      render(data.config)
+    })
+    .catch(() => {}) // silenciar errores — nunca interrumpir la tienda del comerciante
+
+  function render(config: BarConfig) {
+    const {
+      messages = [],
+      backgroundColor = '#000000',
+      textColor = '#ffffff',
+      speed = 3500,
+      closeable = true,
+      transition = 'none',
+    } = config
+
+    // inyectar CSS de animaciones una sola vez
+    if (!document.getElementById('bb-styles')) {
+      const style = document.createElement('style')
+      style.id = 'bb-styles'
+      style.textContent = `
+        @keyframes bbFade { from { opacity:0 } to { opacity:1 } }
+        @keyframes bbSlideUp { from { opacity:0; transform:translateY(6px) } to { opacity:1; transform:translateY(0) } }
+        @keyframes bbSlideDown { from { opacity:0; transform:translateY(-6px) } to { opacity:1; transform:translateY(0) } }
+      `
+      document.head.appendChild(style)
+    }
+
+    if (!messages.length) return
+
+    const bar = document.createElement('div')
+    bar.id = 'buyer-band'
+    Object.assign(bar.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      right: '0',
+      zIndex: '99999',
+      backgroundColor,
+      color: textColor,
+      textAlign: 'center',
+      padding: '10px 48px',
+      fontSize: '14px',
+      fontFamily: 'inherit',
+      lineHeight: '1.4',
+      boxSizing: 'border-box',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '40px',
+    })
+
+    const messageEl = document.createElement('span')
+    bar.appendChild(messageEl)
+
+    if (closeable) {
+      const closeBtn = document.createElement('button')
+      Object.assign(closeBtn.style, {
+        position: 'absolute',
+        right: '12px',
+        top: '50%',
+        transform: 'translateY(-50%)',
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        color: textColor,
+        fontSize: '20px',
+        lineHeight: '1',
+        padding: '0',
+        opacity: '0.7',
+      })
+      closeBtn.textContent = '×'
+      closeBtn.setAttribute('aria-label', 'Cerrar')
+      closeBtn.addEventListener('click', () => {
+        bar.remove()
+        document.body.style.paddingTop = prev
+      })
+      bar.appendChild(closeBtn)
+    }
+
+    document.body.prepend(bar)
+    const prev = document.body.style.paddingTop
+    document.body.style.paddingTop = bar.offsetHeight + 'px'
+
+    let index = 0
+
+    function showMessage(i: number) {
+      const msg = messages[i]
+      if (msg.link) {
+        messageEl.innerHTML = `<a href="${msg.link}" style="color:${textColor};text-decoration:underline;">${msg.text}</a>`
+      } else {
+        messageEl.textContent = msg.text
+      }
+      // re-disparar la animación
+      const anim = TRANSITION_ANIMATION[transition]
+      if (anim) {
+        messageEl.style.animation = 'none'
+        void messageEl.offsetHeight // reflow para resetear
+        messageEl.style.animation = anim
+      }
+    }
+
+    showMessage(0)
+
+    if (messages.length > 1) {
+      setInterval(() => {
+        index = (index + 1) % messages.length
+        showMessage(index)
+      }, speed)
+    }
+  }
+})()

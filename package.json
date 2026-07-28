@@ -1,13 +1,16 @@
 {
-  "name": "band-temp",
+  "name": "buyer-band",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "dev:widget": "esbuild widget-src/announcement-bar.ts --bundle --watch --outfile=public/widget.js",
+    "build:widget": "esbuild widget-src/announcement-bar.ts --bundle --minify --outfile=public/widget.js",
+    "build": "npm run build:widget && next build",
     "start": "next start"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.9",
     "next": "16.2.12",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -17,7 +20,8 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "esbuild": "^0.28.1",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5.9.3"
   }
 }
