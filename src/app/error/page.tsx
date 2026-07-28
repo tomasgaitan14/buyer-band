@@ -3,6 +3,8 @@ const REASONS: Record<string, string> = {
   auth_failed: 'No pudimos completar la instalación. Intentá de nuevo desde el marketplace.',
   not_installed: 'No encontramos una sesión activa. Instalá la app desde el marketplace de Tiendanube.',
   store_not_found: 'La tienda no está registrada. Intentá reinstalar la app.',
+  billing_failed: 'Hubo un error al procesar la suscripción. Intentá de nuevo.',
+  billing_invalid: 'El proceso de pago no es válido. Intentá desde el dashboard.',
 }
 
 export default async function ErrorPage({

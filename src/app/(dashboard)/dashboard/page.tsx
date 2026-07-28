@@ -20,6 +20,14 @@ export default async function DashboardPage() {
 
   if (!store) redirect('/error?reason=store_not_found')
 
+  // Redirigir a billing si el trial expiró y no está activo
+  if (store.plan === 'trial') {
+    const trialExpiresAt = new Date(store.trial_started_at)
+    trialExpiresAt.setDate(trialExpiresAt.getDate() + TRIAL_DAYS)
+    if (new Date() > trialExpiresAt) redirect('/billing')
+  }
+  if (store.plan === 'cancelled') redirect('/billing')
+
   const { data: widgetConfig } = await supabase
     .from('widget_configs')
     .select('config, enabled')
