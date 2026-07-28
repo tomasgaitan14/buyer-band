@@ -103,12 +103,16 @@ export function BandConfigForm({
               ? 'Tu trial vence hoy. Activá tu suscripción para no perder el acceso.'
               : `Tu trial vence en ${trialDaysLeft} día${trialDaysLeft === 1 ? '' : 's'}. Activalo antes de que se corte.`}
           </p>
-          <a
-            href="/billing"
+          <button
+            onClick={async () => {
+              const res = await fetch('/api/billing/create', { method: 'POST' })
+              const data = await res.json()
+              if (data.confirmation_url) window.location.href = data.confirmation_url
+            }}
             className="shrink-0 bg-amber-600 text-white text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-amber-700 transition-colors"
           >
             Activar ahora
-          </a>
+          </button>
         </div>
       )}
 
